@@ -1,0 +1,14 @@
+#!/bin/bash
+
+mkdir /tmp/tmp
+
+echo "-----------------------update pip tools-----------------------"
+pip freeze --local | grep -v '^\-e' | cut -d = -f 1  | xargs pip install -U
+
+echo "-----------------------update brew----------------------------"
+brew list | sort >> ~/Documents/repository/privat/dotfiles-pub/.brew_list
+brew update
+
+echo "-----------------------checking brew--------------------------"
+brew doctor
+
