@@ -6,12 +6,19 @@ project=$1
 task=$2
 
 day=$(date +"%m-%d-%Y")
+horizontal_line="-------------------------------------------------------------" 
 
 touch ~/Dropbox/timetracker/$day.txt
+cp ~/Dropbox/timetracker/$day.txt /tmp/timetracker_$day
 
 termdown 2> /tmp/timetracker_timer
 working_hours=`cat /tmp/timetracker_timer | cut -f2`
-echo -e "$working_hours : $project - $task" >> ~/Dropbox/timetracker/$day.txt
+echo "$working_hours | $project - $task" >> /tmp/timetracker_$day
+
+column -t -s "|" /tmp/timetracker_$day > ~/Dropbox/timetracker/$day.txt
 
 echo -e "--- Todays TimeTracker ---\n"
-cat ~/Dropbox/timetracker/$day.txt
+while read line; 
+do 
+		echo -e "$line \n$horizontal_line"
+done < ~/Dropbox/timetracker/$day.txt
