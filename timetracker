@@ -1,0 +1,17 @@
+#!/bin/bash
+
+## based on termdown https://github.com/trehn/termdown
+
+project=$1
+task=$2
+
+day=$(date +"%m-%d-%Y")
+
+touch ~/Dropbox/timetracker/$day.txt
+
+termdown 2> /tmp/timetracker_timer
+working_hours=`cat /tmp/timetracker_timer | cut -f2`
+echo -e "$working_hours : $project - $task" >> /tmp/tmp/$day.txt
+
+echo -e "--- Todays TimeTracker ---\n"
+cat ~/Dropbox/timetracker/$day.txt
