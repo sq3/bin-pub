@@ -11,7 +11,7 @@ touch ~/Dropbox/timetracker/$day.txt
 
 termdown 2> /tmp/timetracker_timer
 working_hours=`cat /tmp/timetracker_timer | cut -f2`
-echo -e "$working_hours : $project - $task" >> /tmp/tmp/$day.txt
+echo -e "$working_hours : $project - $task" >> ~/Dropbox/timetracker/$day.txt
 
 echo -e "--- Todays TimeTracker ---\n"
 cat ~/Dropbox/timetracker/$day.txt
