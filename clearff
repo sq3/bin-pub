@@ -1,0 +1,3 @@
+#!/bin/bash
+
+mv -v ~/Library/Application\ Support/Firefox /tmp/

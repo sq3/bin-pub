@@ -1,0 +1,9 @@
+#!/bin/bash
+
+rm -rf /Users/iMarc/Library/Application\ Support/Google/Chrome
+
+mv -v /tmp/Chrome /Users/iMarc/Library/Application\ Support/Google
+
+chmod 755 /Users/iMarc/Library/Application Support/Google/Chrom
+
+chmod 755 /Users/iMarc/Library/Application Support/Google/Chrome
