@@ -21,6 +21,10 @@ echo -e "-----------------------checking brew--------------------------\n"
 brew doctor
 $new_line
 
+echo -e "-----------------------cleanup brew--------------------------\n"
+brew cleanup
+$new_line
+
 echo -e "-----------------------update GitHub tools--------------------\n"
 ls /usr/local/tools/ > /tmp/user_installed_tools
 
