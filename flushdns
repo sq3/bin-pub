@@ -1,3 +1,2 @@
 #!/bin/bash
-
-sudo discoveryutil udnsflushcaches
+sudo dscacheutil -flushcache;sudo killall -HUP mDNSResponder; echo "cache flushed"
