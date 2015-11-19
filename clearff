@@ -3,3 +3,4 @@
 rm -rf /tmp/Firefox
 mv -v ~/Library/Application\ Support/Firefox /tmp/
 rm -rf ~/Library/Caches/Firefox
+rm -rf ~/Library/Caches/Mozilla
