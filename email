@@ -1,3 +1,3 @@
 #!/bin/bash
 
-ssh -t tunnlr "bash -lic 'tmux attach -t Mail'"
+ssh -t heineken.kasten.beer "bash -lic 'tmux attach -t Mail'"
