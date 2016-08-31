@@ -4,4 +4,4 @@
 # https://github.com/vain/bin-pub/blob/master/randgen-catchy
 # Thank you for this :)
 
-mkdir /tmp/tmp/$(randgen-catchy -w 1)
+mkdir /tmp/tmp/$(randgen-catchy -w 1)-$(date -I)
