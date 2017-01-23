@@ -1,0 +1,100 @@
+#!/usr/bin/env python2.7
+# coding: utf-8
+
+# thx for this work vain
+# https://github.com/vain/bin-pub/blob/master/vmv
+
+import sys
+import os
+import tempfile
+import subprocess
+
+if len(sys.argv) < 2:
+    print >> sys.stderr, "Usage: %s file..." % sys.argv[0]
+    sys.exit(1)
+
+editor = os.getenv("EDITOR", "vi")
+separator = ": "
+
+# Prepare format string to get a nice padding of the numbers. Also
+# include the separator.
+num_indices = len(sys.argv) - 1
+str_format = "%%%dd%s%%s\n" % (len(str(num_indices)), separator)
+
+# Write all names to a file and store them in a dict.
+(fd, filename) = tempfile.mkstemp()
+i = 0
+assoced_names = {}
+for n in sys.argv[1:]:
+    if os.path.isdir(n):
+        os.write(fd, "d ")
+    elif os.path.islink(n):
+        os.write(fd, "l ")
+    elif os.path.isfile(n):
+        os.write(fd, "  ")
+    elif not os.path.lexists(n):
+        os.write(fd, "x ")
+    else:
+        os.write(fd, "? ")
+    os.write(fd, str_format % (i, n))
+    assoced_names[i] = n
+    i += 1
+os.close(fd)
+
+# Call the editor, re-read the file and clean up.
+retval = subprocess.call([editor, filename])
+
+try:
+    with open(filename, "r") as fd:
+        entries = fd.readlines()
+except IOError as (errno, strerror):
+    print >> sys.stderr, "Could not read %s: %s" % (filename, strerror)
+    sys.exit(1)
+
+os.remove(filename)
+
+# Leave out the indicator, get indices, the original name and move the
+# files.
+for n in entries:
+    # If it's empty, skip this entry.
+    if n == "":
+        continue
+
+    # Try to remove one trailing newline. If it's empty afterwards, skip
+    # to the next entry.
+    if n[-1] == "\n":
+        n = n[:-1]
+        if n == "":
+            continue
+
+    # Remove the file type indicator. If it's empty afterwards, skip to
+    # the next entry.
+    n = n[2:]
+    if n == "":
+        continue
+
+    # Try to separate the filename from the index. If there's no
+    # "separator", skip this entry.
+    tokens = n.split(separator)
+    if len(tokens) < 2:
+        continue
+
+    # Try to parse the index. Skip this entry on error.
+    try:
+        index = int(tokens[0])
+    except ValueError:
+        continue
+
+    # Try to find this index in our dict. If it can't be found, skip
+    # this entry.
+    try:
+        name_from = assoced_names[index]
+    except KeyError:
+        continue
+
+    # Now, we got the old name and the new name. Rename the file if the
+    # names are not equal. Use "mv" to retain well known behaviour.
+    name_to = separator.join(tokens[1:])
+    if name_from != name_to:
+        if subprocess.call(["mv", "-vi", name_from, name_to]) != 0:
+            sys.exit(1)
