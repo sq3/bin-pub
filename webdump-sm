@@ -1,0 +1,141 @@
+#!/bin/bash
+
+#               _         _
+# __      _____| |__   __| |_   _ _ __ ___  _ __
+# \ \ /\ / / _ \ '_ \ / _` | | | | '_ ` _ \| '_ \
+#  \ V  V /  __/ |_) | (_| | |_| | | | | | | |_) |
+#   \_/\_/ \___|_.__/ \__,_|\__,_|_| |_| |_| .__/
+#                                          |_|
+#
+# Publish files on your own webserver. Put them in a hard-to-guess
+# directory. Clean up expired files.
+
+# Dependencies:
+#
+#     - randgen-catchy  (you can find it in this repo, too)
+#     - rsync over ssh
+
+# Exemplary ~/.webdump:
+#
+#     localbase=~/www/temporary-dump
+#     remotebase=bob@alice:/srv/http/vhosts/dump
+#     urlbase=http://dump.example.com
+#
+# Note that you don't need to use a config file. You can simply export
+# those variables.
+
+if [[ -z "$localbase" ]] || [[ -z "$remotebase" ]] || [[ -z "$urlbase" ]]
+then
+    . ~/.webdump-sm
+fi
+
+if [[ -z "$localbase" ]] || [[ -z "$remotebase" ]] || [[ -z "$urlbase" ]]
+then
+    echo 'No settings found. Aborting.' >&2
+    exit 1
+fi
+
+# "--delete-after" removes the original file after publishing it.
+[[ "$1" == "--delete-after" ]] && { delete=1; shift; } || delete=0
+
+# Take care of expiry date.
+now=$(gdate +%s)
+expiry_minutes=$((60 * 24 * 7))
+
+case "$1" in
+    -m|--minute) expiry_minutes=$((1)); shift ;;
+    -h|--hour) expiry_minutes=$((60)); shift ;;
+    -d|--day) expiry_minutes=$((60 * 24)); shift ;;
+    -w|--week) shift ;;  # keep default
+    -M|--month) expiry_minutes=$((60 * 24 * 30)); shift ;;
+    *) if [[ "$1" =~ ^-[0-9]+$ ]]
+       then
+           expiry_minutes=${1#-}
+           shift
+       elif [[ "$1" == "--" ]]
+       then
+           shift
+       elif [[ "$1" =~ ^- ]]
+       then
+           echo "Unknown argument '$1', aborting." >&2
+           exit 1
+       fi
+esac
+
+expiry=$((expiry_minutes * 60))
+expiry_human=$(gdate -d "@$((now + expiry))" '+%a, %F, %T')
+
+# Create base directory for new files (if needed).
+if (( $# > 0 ))
+then
+    prefix=$(randgen-catchy -w 2)
+    mkdir -p "$localbase"/"$prefix"
+    echo $((now + expiry)) >"$localbase"/"$prefix".expiry
+fi
+
+# Copy files and keep track of paths and URLs.
+urls=()
+locals=()
+for i
+do
+    cp -avi -- "$i" "$localbase"/"$prefix"
+
+    bn=$(basename -- "$i")
+    ebn=$(python3 -c \
+        'from urllib.parse import quote as q, sys; print(q(sys.argv[1]))' "$bn")
+    urls+=("$urlbase"/"$prefix"/"$ebn")
+    locals+=("$localbase"/"$prefix"/"$bn")
+
+    (( delete )) && rm -Rfv -- "$i"
+done
+
+# Get all files that are currently stored on the remote host. Why?
+# Because this allows you to use the same dump area from multiple
+# clients: When client A creates new files, client B retrieves them
+# first before calling "rsync --delete ..." (which would otherwise erase
+# them).
+rsync -avz -e ssh -p 2223 "$remotebase"/ "$localbase"
+
+# Remove expired files.
+(
+shopt -s nullglob
+for i in "$localbase"/*.expiry
+do
+    expiry=$(< "$i")
+    if (( now > expiry ))
+    then
+        rm -Rfv -- "$i" "${i%.expiry}"
+    fi
+done
+)
+
+# Push new data set to remote.
+rsync -avz --delete -e ssh -p 2223 "$localbase"/ "$remotebase"
+
+# Informational banner.
+if (( expiry_minutes >= 60 * 24 ))
+then
+    expiry_duration_human="~$((expiry_minutes / (60 * 24))) day(s)"
+elif (( expiry_minutes >= 60 ))
+then
+    expiry_duration_human="~$((expiry_minutes / 60)) hour(s)"
+else
+    expiry_duration_human="$expiry_minutes minute(s)"
+fi
+
+if (( "${#urls[@]}" > 0 ))
+then
+    IFS=$'\n'
+    cat <<EOF
+
+
+$(tput bold)Local:$(tput sgr0)
+${locals[*]}
+
+$(tput bold)Public:$(tput sgr0)
+$(tput smul)${urls[*]}$(tput sgr0)
+
+$(tput bold)Expiry: $(tput setaf 3)$expiry_human
+        $(tput sgr0)$(tput bold)$expiry_duration_human$(tput sgr0)
+EOF
+fi
