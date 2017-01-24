@@ -1,0 +1,88 @@
+#!/usr/bin/env python3
+
+
+from argparse import ArgumentParser
+from random import choice, randint
+
+
+chars_start = list('bcdfghjklmnprstvwxz')
+chars_vowels = list('aeiou') + ['ai', 'ao', 'au', 'ea', 'ee', 'ei',
+                                'eu', 'ia', 'ie', 'oo', 'ou']
+chars_cons = chars_start + ['bb', 'bl', 'cc', 'ch', 'ck', 'dd', 'dr',
+                            'ds', 'dt', 'ff', 'gg', 'gn', 'kl', 'll',
+                            'mb', 'md', 'mm', 'mp', 'mt', 'nc', 'nd',
+                            'nn', 'np', 'nt', 'pp', 'rr', 'rt', 'sh',
+                            'ss', 'st', 'tl', 'ts', 'tt']
+
+
+def generate(words, per_word, digits):
+    pwd = ''
+    is_start = True
+    word_length = 0
+    words_done = 0
+    while words_done < words:
+        if is_start:
+            add = choice(chars_start).upper()
+            is_start = False
+            is_vowel = True
+        else:
+            if is_vowel:
+                add = choice(chars_vowels)
+            else:
+                add = choice(chars_cons)
+            is_vowel = not is_vowel
+        pwd += add
+
+        word_length += 1
+        if word_length == per_word:
+            pwd += '-'
+            word_length = 0
+            words_done += 1
+            is_start = True
+
+    pwd += str(randint(10**(digits - 1), 10**digits - 1))
+
+    return pwd
+
+def complexity(words, per_word, digits):
+    if per_word % 2 == 1:
+        combis = ((len(chars_start) *
+                   len(chars_vowels)**(per_word // 2) *
+                   len(chars_cons)**(per_word // 2)
+                  )**words
+                 ) * 10**digits
+    else:
+        combis = ((len(chars_start) *
+                   len(chars_vowels)**(per_word // 2) *
+                   len(chars_cons)**(per_word // 2 - 1)
+                  )**words
+                 ) * 10**digits
+
+    ex = 1
+    while (26 + 26 + 10)**ex < combis:
+        ex += 1
+    ex -= 1
+
+    print('Words: {}, per word: {}, digits: {}'.format(words, per_word, digits))
+    print('Lengths of character classes: {}, {}, {}'.format(len(chars_start),
+                                                            len(chars_vowels),
+                                                            len(chars_cons)))
+    print()
+    print('Combinations: {}'.format(combis))
+    print()
+    print('This is better than a random alphanumeric string of {} characters,'.format(ex))
+    print('which would yield {} combinations.'.format((26 + 26 + 10)**ex))
+
+
+if __name__ == '__main__':
+    parser = ArgumentParser()
+    parser.add_argument('-w', '--words', type=int, default=4)
+    parser.add_argument('-p', '--per-word', type=int, default=3)
+    parser.add_argument('-d', '--digits', type=int, default=2)
+    parser.add_argument('-c', '--complexity', action='store_true')
+    args = parser.parse_args()
+
+    if args.complexity:
+        complexity(args.words, args.per_word, args.digits)
+    else:
+        print(generate(args.words, args.per_word, args.digits))
