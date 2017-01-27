@@ -1,0 +1,9 @@
+#!/bin/bash
+
+echo "restart kwm and khd..."
+brew services restart kwm && brew services restart
+if [ $? -eq 0  ]; then
+	echo "done"
+else
+	echo "failed"
+fi
