@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
 
+# many thanks to vain for this awesome work
+# https://github.com/vain/bin-pub/blob/master/randgen-catchy
+
 
 from argparse import ArgumentParser
 from random import choice, randint
