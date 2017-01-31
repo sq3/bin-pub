@@ -102,7 +102,7 @@ find "$localbase"/"$prefix" -type f -exec chmod 0644 '{}' '+'
 # clients: When client A creates new files, client B retrieves them
 # first before calling "rsync --delete ..." (which would otherwise erase
 # them).
-rsync -avzP -e "ssh -p 2223" "$remotebase"/ "$localbase"
+rsync -avzP -e "ssh -4 -p 2223" "$remotebase"/ "$localbase"
 
 # Remove expired files.
 (
