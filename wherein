@@ -1,0 +1,8 @@
+#!/bin/bash
+
+# thx vain for this work :-)
+# https://github.com/vain/bin-pub/blob/master/wherein
+
+# Wie whereind, schließt aber dotfiles und dotdirs aus.
+find -name ".?*" -prune -o -type f \
+	-exec grep -C 5 -n --color=always "$@" '{}' '+' | less
