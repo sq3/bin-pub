@@ -1,0 +1,7 @@
+#!/bin/bash
+
+name=$(date +%s)
+
+vim /tmp/tmp/$name.txt
+
+webdump-xy /tmp/tmp/$name.txt
