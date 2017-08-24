@@ -1,0 +1,7 @@
+#!/bin/bash
+
+vim=$(which vim)
+
+input=$1
+
+vim -c ":r! $input"
