@@ -1,4 +1,4 @@
 #!/bin/bash
 
 cd ~/Documents/notes/
-$ vim -c "NERDTree"
+vim -c "NERDTree"
