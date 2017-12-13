@@ -17,15 +17,16 @@ def parse_arguments():
     parser.add_argument(
         '--dir',
         '-d',
-        default='.',
-        action='store'
+        default='',
+        action='store',
+        help='reltive path to share'
     )
     arguments = parser.parse_args()
     return arguments
 
 def main(args):
-    web_dir = os.path.join(os.path.dirname(__file__), args.dir)
-    os.chdir(web_dir)
+    share = os.path.join(os.getcwd(), args.dir)
+    os.chdir(share)
 
     port = int(args.port)
     handler = SimpleHTTPServer.SimpleHTTPRequestHandler
