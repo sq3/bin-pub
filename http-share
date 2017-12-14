@@ -3,6 +3,7 @@
 
 import argparse
 import os
+import psutil
 import SimpleHTTPServer
 import SocketServer
 
@@ -21,8 +22,22 @@ def parse_arguments():
         action='store',
         help='reltive path to share'
     )
+    parser.add_argument(
+        '--interface',
+        '-i',
+        default='',
+        action='store',
+        help='set interface to listen on. Listen on all interfaces by default'
+    )
     arguments = parser.parse_args()
     return arguments
+
+def get_iface_ips(port, interface):
+    if interface == '':
+        for iface, cfg in psutil.net_if_addrs().items():
+            print('http://{}:{}'.format(cfg[0].address, port))
+    else:
+        print('http://{}:{}'.format(interface, port))
 
 def main(args):
     share = os.path.join(os.getcwd(), args.dir)
@@ -30,9 +45,10 @@ def main(args):
 
     port = int(args.port)
     handler = SimpleHTTPServer.SimpleHTTPRequestHandler
-    httpd = SocketServer.TCPServer(("", port), handler)
+    httpd = SocketServer.TCPServer((args.interface, port), handler)
 
-    print "serving at port", port
+    get_iface_ips(port, args.interface)
+
     httpd.serve_forever()
 
 if __name__ == '__main__':
