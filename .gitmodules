@@ -1,3 +1,9 @@
 [submodule ".ssh-audit"]
 	path = .ssh-audit
 	url = git@github.com:arthepsy/ssh-audit.git
+[submodule "sshrc"]
+	path = sshrc
+	url = git@github.com:Russell91/sshrc.git
+[submodule ".sshrc"]
+	path = .sshrc
+	url = git@github.com:Russell91/sshrc.git
