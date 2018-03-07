@@ -1,3 +1,0 @@
-#!/bin/bash
-
-ssh -4 -t dorada.kasten.beer "bash -lic 'tmux attach -t IRC'"
